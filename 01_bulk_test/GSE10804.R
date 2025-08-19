@@ -5,13 +5,11 @@ library(GEOquery)
 library(tinyarray)
 library(limma)
 
-
 getwd()
 setwd("./DM_ED/01_bulk_test/")
 
 # GEO数据下载
 # 直接用GSE号即可，默认会通过曾老师的GEO中国镜像下载，超级快，不需要代理
-# 下载来的gse是一个长度为3的列表，第1个就是表达矩阵，第2个是样本信息（pdata），第3个是GPL信息
 geoID = "GSE10804"
 gse <- geo_download(geoID) # 如果报错可添加by_annopbrobe = T从官方途径下载。
 
@@ -37,11 +35,11 @@ glimpse(pd)
 group_list = ifelse(str_detect(pd$title,"HCC"), # 自行寻找分组信息所在的组合分组的情况
              "ED",
              "Control")
-group_list = factor(Group,levels = c("Control", "ED")) # control为参考组，在前
+group_list = factor(group_list,levels = c("Control", "ED")) # control为参考组，在前
 group_list
 # Group = data.frame(
 #   sample = colnames(exp),
-#   Group = Group
+#   Group = group_list
 # )
 # write.csv(Group, "Group.csv",row.names = FALSE)
 
@@ -96,7 +94,7 @@ adjust = FALSE
 entriz = FALSE # 函数返回的结果数据框 deg 中是否会多出一列 ENTREZID。
 species = "human"
 symmetry = TRUE
-my_genes = NULL
+my_genes = NULL # genes for pheatmap
 lab = NA
 show_rownames = FALSE
 cluster_cols = TRUE

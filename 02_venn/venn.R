@@ -1,5 +1,7 @@
-library(VennDiagram)      
 library(dplyr)
+library(ggplot2)
+library(VennDiagram)     
+library(tinyarray)
 setwd("./02_venn/")
 rm(list = ls())
 
@@ -23,16 +25,22 @@ downList = list(deg1_down, deg2_down)
 names(downList) = c("GSE10804_down", "GSE25724_down")
 
 # 绘制上调基因韦恩图
-venn.plot=venn.diagram(upList,filename=NULL,fill=c("cornflowerblue", "darkorchid1"),scaled=FALSE,cat.pos=c(-1,1),cat.col = c("cornflowerblue", "darkorchid1"),cat.cex = 1.1)
-pdf(file="up.pdf", width=5, height=5)
-grid.draw(venn.plot)
-dev.off()
+p1 = draw_venn(upList, main = "up")
+p1
+ggsave("up.png", p1)
+# venn.plot=venn.diagram(upList,filename=NULL,fill=c("cornflowerblue", "darkorchid1"),scaled=FALSE,cat.pos=c(-1,1),cat.col = c("cornflowerblue", "darkorchid1"),cat.cex = 1.1)
+# pdf(file="up.pdf", width=5, height=5)
+# grid.draw(venn.plot)
+# dev.off()
 
 #绘制下调基因韦恩图
-venn.plot=venn.diagram(downList,filename=NULL,fill=c("cornflowerblue", "darkorchid1"),scaled=FALSE,cat.pos=c(-1,1),cat.col = c("cornflowerblue", "darkorchid1"),cat.cex = 1.1)
-pdf(file="down.pdf", width=5, height=5)
-grid.draw(venn.plot)
-dev.off()
+p2 = draw_venn(downList, main = "down")
+p2
+ggsave("down.png", p2)
+# venn.plot=venn.diagram(downList,filename=NULL,fill=c("cornflowerblue", "darkorchid1"),scaled=FALSE,cat.pos=c(-1,1),cat.col = c("cornflowerblue", "darkorchid1"),cat.cex = 1.1)
+# pdf(file="down.pdf", width=5, height=5)
+# grid.draw(venn.plot)
+# dev.off()
 
 # 输出交集基因文件
 upInterGenes=Reduce(intersect, upList)        #交集上调基因,Reduce(intersect, list(v1, v2, v3))
@@ -45,4 +53,3 @@ colnames(interTab)=c("Gene", "Type") # 合并
 write.table(file=typeFile, interTab, sep="\t", quote=F, col.names=T, row.names=F)
 #输出交集基因的列表文件
 write.table(file=listFile, interTab[,1], sep="\t", quote=F, col.names=F, row.names=F)
-

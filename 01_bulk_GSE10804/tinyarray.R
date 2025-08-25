@@ -6,14 +6,23 @@ library(tinyarray)
 library(limma)
 
 getwd()
-setwd("./DM_ED/01_bulk_test/")
+setwd("./01_bulk_GSE10804/")
 
 # GEO数据下载
 # 直接用GSE号即可，默认会通过曾老师的GEO中国镜像下载，超级快，不需要代理
 geoID = "GSE10804"
-gse <- geo_download(geoID) # 如果报错可添加by_annopbrobe = T从官方途径下载。
+file_path <- paste0("./", geoID, "_eSet.Rdata")
 
-load("./GSE10804_eSet.Rdata")
+# 检查文件是否存在
+if (file.exists(file_path)) {
+  # 文件存在，直接加载
+  load(file_path)
+  message("文件已存在，直接加载数据")
+} else {
+  # 文件不存在，进行下载
+  gse <- geo_download(geoID) # 如果报错可添加by_annopbrobe = T从官方途径下载
+  message("文件下载完成并已保存")
+}
 
 # 表达矩阵
 gse = gset[[1]]
@@ -44,7 +53,20 @@ group_list
 # write.csv(Group, "Group.csv",row.names = FALSE)
 
 # ID转换
-ids <- AnnoProbe::idmap(gse@annotation) # 配合AnnoProbe
+# 生成文件路径
+ids_file <- paste0(gse@annotation, "_ids.rds")
+
+# 检查文件是否存在
+if (file.exists(ids_file)) {
+  # 文件存在，直接读取
+  ids <- readRDS(ids_file)
+  message("ID映射文件已存在，直接加载")
+} else {
+  # 文件不存在，进行生成并保存
+  ids <- AnnoProbe::idmap(gse@annotation)
+  saveRDS(ids, file = ids_file)
+  message("ID映射文件生成完成并已保存")
+}
 # 如果不能使用AnnoProbe找到，则自己制作ids
 # ids为一个dataframe，第一列为probe_id，第二列为symbol
 
@@ -76,7 +98,7 @@ saveRDS(exp1, paste0(geoID, "_anno_exp.rds"))
 
 
 # 差异分析及可视化，一步完成
-dcp = get_deg_all(exp, group_list, ids, entriz = FALSE, adjust=FALSE, logFC_cutoff = 1, pvalue_cutoff = 0.05) # 根据提供表达矩阵、分组信息和探针注释，返回差异分析结果
+dcp = get_deg_all(exp, group_list, ids, entriz = FALSE, adjust=FALSE, logFC_cutoff = 0.585, pvalue_cutoff = 0.05) # 根据提供表达矩阵、分组信息和探针注释，返回差异分析结果
 write.csv(dcp$deg, paste0(geoID, "_deg.csv"), row.names=FALSE)
 dcp$plots
 ggsave(paste0(geoID, "_plots.png"),width = 15,height = 5, bg="white", dpi=300)

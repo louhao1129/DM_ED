@@ -3,6 +3,7 @@ library(qs2)
 library(tidyverse)
 library(GEOquery)
 options(stringsAsFactors = FALSE)
+rm(list = ls())
 
 # https://space.bilibili.com/3546800304687494
 setwd("./01_bulk_GSE15932/")
@@ -10,7 +11,7 @@ setwd("./01_bulk_GSE15932/")
 fs::dir_create("WGCNA_output", recurse = TRUE)
 
 # 表达矩阵清洗
-mrna_expr = readRDS("./GSE15932_exp.rds")
+mrna_expr = readRDS("./GSE15932log_anno_exp.rds")
 head(mrna_expr[1:4, 1:4]) #是否取log？
 
 # 挑选基因，采用绝对中位差mad过滤数据
@@ -53,7 +54,7 @@ dev.off()
 # keepSamples = (clust==1)
 # datExpr0 = datExpr0[keepSamples, ]
 
-qs_save(datExpr0, "WGCNA_output/dataExpr0.qs2")
+qs_save(datExpr0, "WGCNA_output/datExpr0.qs2")
 rm(list = ls())
 
 
@@ -263,6 +264,7 @@ dev.off()
 
 ##### 网络模块可视化
 # 提取感兴趣模块中的基因
-modules = c("magenta", "darkturquoise")
+modules = c("black") # 注意去除前缀ME
 inModule = (moduleColors==modules) # 基因所在位置
-modGenes = colnames(datExpr0)[inModule]
+modGenes = colnames(datExpr0)[inModule]; print(length(modGenes))
+saveRDS(modGenes, "./WGCNA_output/modGenes.rds")

@@ -3,15 +3,16 @@ library(qs2)
 library(tidyverse)
 library(GEOquery)
 options(stringsAsFactors = FALSE)
+rm(list = ls())
 
 # https://space.bilibili.com/3546800304687494
 getwd()
-setwd("./01_bulk_GSE10804/")
+setwd("./01_bulk_GSE95849/")
 # 创建目录（若存在则静默跳过）
 fs::dir_create("WGCNA_output", recurse = TRUE)
 
 # 表达矩阵清洗
-mrna_expr = readRDS("./GSE10804_anno_exp.rds")
+mrna_expr = readRDS("./GSE95849_anno_exp.rds")
 head(mrna_expr[1:4, 1:4]) # 是否取log？
 # mrna_expr = log2(mrna_expr+1)
 
@@ -60,24 +61,27 @@ rm(list = ls())
 
 
 ##### 表型信息处理
-load("./GSE10804_eSet.Rdata")
+load("./GSE95849_eSet.Rdata")
 datExpr0 = qs_read("WGCNA_output/datExpr0.qs2")
 
 # 数据分组
 gse = gset[[1]]
 pd = pData(gse)
 glimpse(pd)
-Group=ifelse(str_detect(pd$title,"HCC"), # 自行寻找分组信息所在的组合分组的情况
-             "ED",
+pd = pd[1:12,]
+group_list = ifelse(str_detect(pd$title,"DM"), # 自行寻找分组信息所在的组合分组的情况
+             "DM",
              "Control")
+group_list = factor(group_list,levels = c("Control", "DM")) # control为参考组，在前
+group_list
 Group = data.frame(
   sample = rownames(datExpr0),
-  Group = Group
+  Group = group_list
 )
 traitdata = Group |>
-  mutate(ED = ifelse(Group == "ED", 1, 0)) |> 
+  mutate(DM = ifelse(Group == "DM", 1, 0)) |> 
   column_to_rownames("sample") |> 
-  select(ED)
+  select(DM)
 qs_save(traitdata, "WGCNA_output/traitdata.qs2")
 # Re-cluster samples
 sampleTree2 = hclust(dist(datExpr0), method = "average")
